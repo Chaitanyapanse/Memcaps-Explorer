@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hafnia Memcap Explorer</title>
+<meta name="description" content="Interactive models for HZO, HfO2 and ZrO2 ferroelectric memcapacitors: theory, measurements, electrodes, switching physics, neuromorphic computing and PLD growth.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@500;600;700&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <p class="formula"><b>Hf</b>ₓ<b>Zr</b>₁₋ₓO₂ · W / TiN / Pt · Pca2₁</p>
+      <h1><a href="#">Hafnia Memcap Explorer</a></h1>
+      <p class="sub">Interactive models for ferroelectric HZO, HfO₂ and ZrO₂ memcapacitors, from free energy to neuromorphic computing. Chaitanya Panse · Department of Materials Engineering · guide Dr. Bhagwati Prasad.</p>
+    </div>
+    <div class="tools">
+      <a class="btn" href="#papers">Papers</a>
+      <a class="btn" href="#ideas">New directions</a>
+      <button class="btn" id="theme" type="button" aria-label="Switch light or dark theme">Light / dark</button>
+    </div>
+  </header>
+  <main id="view" aria-live="polite"></main>
+  <footer>Models are teaching simulations with illustrative parameters unless a plot says it shows measured data. Source on GitHub; built for the memcapacitor project, 2026.</footer>
+</div>
+<script src="assets/core.js"></script>
+<script src="assets/plot.js"></script>
+<script src="assets/m-foundations.js"></script>
+<script src="assets/m-measure.js"></script>
+<script src="assets/m-frontA.js"></script>
+<script src="assets/m-frontB.js"></script>
+<script src="assets/m-frontCDE.js"></script>
+<script src="assets/m-pld.js"></script>
+<script src="assets/pages.js"></script>
+<script>MX.start();</script>
+</body>
+</html>
