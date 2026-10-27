@@ -135,11 +135,34 @@
     current = run; setTimeout(run, 0);
   }
 
+  function buildNav() {
+    const nav = document.getElementById('tabs'); if (!nav) return; nav.innerHTML = '';
+    const row = h('div', { class: 'tabrow' });
+    row.appendChild(h('a', { class: 'tab', href: '#', 'data-sec': 'home' }, 'Overview'));
+    MX.sections.forEach(s => { const first = MX.mods.find(m => m.sec === s.id); const SH = { found: 'Foundations', meas: 'Measurements', memcap: 'Memcapacitors', elec: 'Electrodes', switch: 'Switching', layers: 'Layers', time: 'Memory in time', pld: 'PLD growth' }; if (first) row.appendChild(h('a', { class: 'tab', href: '#' + first.id, 'data-sec': s.id }, SH[s.id] || s.title)); });
+    row.appendChild(h('a', { class: 'tab', href: '#papers', 'data-sec': 'lit' }, 'Papers & plan'));
+    nav.appendChild(row); nav.appendChild(h('div', { class: 'subrow' }));
+  }
+  function updateNav(id) {
+    const nav = document.getElementById('tabs'); if (!nav) return;
+    const m = MX.mods.find(x => x.id === id); const sec = m ? m.sec : (MX.pages[id] ? 'lit' : 'home');
+    nav.querySelectorAll('.tab').forEach(t => { if (t.getAttribute('data-sec') === sec) { t.setAttribute('aria-current', 'page'); t.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } else t.removeAttribute('aria-current'); });
+    const sub = nav.querySelector('.subrow'); sub.innerHTML = '';
+    let items = [];
+    if (m) items = MX.mods.filter(x => x.sec === sec).map(x => [x.id, x.title, MX.mods.indexOf(x) + 1]);
+    else if (sec === 'lit') items = [['papers', 'Paper library'], ['ideas', 'Six new directions'], ['refs', 'References']];
+    else items = MX.sections.map(s => { const f = MX.mods.find(x => x.sec === s.id); return f ? [f.id, s.title + ' (' + MX.mods.filter(x => x.sec === s.id).length + ')'] : null; }).filter(Boolean);
+    sub.hidden = sec === 'home';
+    items.forEach(it => { const a = h('a', { class: 'subtab', href: '#' + it[0] }, (it[2] ? '<span class="n">' + String(it[2]).padStart(2, '0') + '</span>' : '') + it[1]); if (it[0] === id) a.setAttribute('aria-current', 'page'); sub.appendChild(a); });
+    const cur = sub.querySelector('[aria-current]'); if (cur) cur.scrollIntoView({ block: 'nearest', inline: 'center' });
+  }
+
   function route() {
     if (stopAnim) { stopAnim(); stopAnim = null; } current = null;
     const id = (location.hash || '').replace('#', '');
     const m = MX.mods.find(x => x.id === id);
     if (m) moduleView(m); else if (MX.pages[id]) { document.getElementById('view').innerHTML = ''; MX.pages[id](document.getElementById('view')); current = null; } else home();
+    updateNav(id);
     window.scrollTo(0, 0);
   }
   MX.start = function () {
@@ -149,6 +172,6 @@
       const cur = document.documentElement.getAttribute('data-theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
       const nx = cur === 'dark' ? 'light' : 'dark'; document.documentElement.setAttribute('data-theme', nx); saveTheme(nx); if (current) current();
     });
-    window.addEventListener('hashchange', route); route();
+    buildNav(); window.addEventListener('hashchange', route); route();
   };
 })();

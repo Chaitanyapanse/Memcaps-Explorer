@@ -27,8 +27,7 @@ Open `index.html` in any browser. The site has no build step and no dependencies
 
 1. Create a GitHub account at github.com if you do not have one.
 2. Click **New repository**. Name it, for example, `memcap-explorer`. Set it to **Public** and create it.
-3. On the empty repository page, click **uploading an existing file**. Drag in everything from this folder: `index.html`, `README.md`, `.nojekyll` and the whole `assets` folder. Keep the folder structure. Click **Commit changes**.
-   - Hidden files such as `.nojekyll` may not show in your file browser. It is optional and can be skipped.
+3. On the empty repository page, click **uploading an existing file**. Drag in every file from this folder (`index.html`, `README.md`, `style.css` and the `.js` files). All files sit side by side at the top level. Click **Commit changes**.
 4. Go to **Settings → Pages**. Under **Build and deployment**, set **Source** to *Deploy from a branch*, then choose **Branch: main** and **/(root)**, and click **Save**.
 5. After about a minute the site is live at `https://<your-username>.github.io/memcap-explorer/`. The link also appears at the top of the Pages settings.
 
@@ -50,7 +49,7 @@ Then enable Pages as in step 4.
 
 ## Adding a new model
 
-Each model is one object passed to `MX.add({...})` in a file under `assets/`:
+Each model is one object passed to `MX.add({...})` in one of the `m-*.js` files:
 
 ```js
 MX.add({
