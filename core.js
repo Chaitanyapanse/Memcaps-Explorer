@@ -57,24 +57,52 @@
 
   function home() {
     const root = document.getElementById('view'); root.innerHTML = '';
-    const intro = h('section', { class: 'intro' });
-    intro.appendChild(h('div', null, '<p>An interactive companion to the memcapacitor project: every model behind the slides, as a live simulation with its theory. Move a slider and the physics answers. Each module ends with what it means for our HZO, HfO₂ and ZrO₂ films on W, Pt and TiN.</p>'));
-    intro.appendChild(h('div', { class: 'how' }, '<p><b>How to use.</b> Pick a topic below. The left column holds the controls and live read-outs; the plots update as you drag. Theory, equations and what to look for are under the plots.</p><p>Hover a curve to read values. Each plot has a <b>PNG</b> button, and <b>Export CSV</b> saves the data behind the current plot.</p>'));
-    root.appendChild(intro);
+    const nMods = MX.mods.length, nSec = MX.sections.filter(s => MX.mods.some(m => m.sec === s.id)).length;
+    const hero = h('section', { class: 'hero' });
+    const left = h('div', { class: 'hero-text' });
+    left.innerHTML = '<p class="eyebrow">Interactive physics companion</p><h2 class="hero-title">Move a slider. Watch hafnia answer.</h2>' +
+      '<p class="hero-lede">Every model behind our HZO, HfO₂ and ZrO₂ memcapacitor work as a live simulation with its theory: from the Landau free energy, through the P–E loop and PUND on the tester, to electrodes, antiferroelectric memory, reservoir computing and PLD growth.</p>' +
+      '<div class="stats"><div><b>' + nMods + '</b><span>live models</span></div><div><b>' + nSec + '</b><span>topics</span></div><div><b>26</b><span>papers explained</span></div></div>' +
+      '<div class="hero-cta"><a class="btn primary" href="#' + MX.mods[0].id + '">Start with ' + MX.mods[0].title + ' →</a><a class="btn" href="#ideas">Six new directions</a></div>';
+    const fig = h('figure', { class: 'hero-fig' });
+    const cv = h('canvas', { 'aria-label': 'Animated ferroelectric hysteresis loop' }); fig.appendChild(cv);
+    fig.appendChild(h('figcaption', null, 'A ferroelectric remembers: the loop traced live by 300 switching regions'));
+    hero.appendChild(left); hero.appendChild(fig); root.appendChild(hero);
+    const grid = h('section', { class: 'topic-grid', 'aria-label': 'Topics' });
     let n = 0;
     MX.sections.forEach(s => {
       const mods = MX.mods.filter(m => m.sec === s.id); if (!mods.length) return;
-      const sec = h('section', { class: 'sec' });
-      sec.appendChild(h('div', { class: 'sec-head' }, '<h3>' + s.title + '</h3><p>' + s.blurb + '</p>'));
-      const chips = h('div', { class: 'chips' });
-      mods.forEach(m => { n++; chips.appendChild(h('a', { class: 'chip', href: '#' + m.id }, '<span class="n">' + String(n).padStart(2, '0') + '</span>' + m.title)); });
-      sec.appendChild(chips); root.appendChild(sec);
+      const a = n + 1, b = n + mods.length; n = b;
+      const card = h('article', { class: 'topic' });
+      card.innerHTML = '<p class="range">' + String(a).padStart(2, '0') + (b > a ? '–' + String(b).padStart(2, '0') : '') + '</p><h3><a href="#' + mods[0].id + '">' + s.title + '</a></h3><p class="blurb">' + s.blurb + '</p><ul>' + mods.map(m => '<li><a href="#' + m.id + '">' + m.title + '</a></li>').join('') + '</ul>';
+      grid.appendChild(card);
     });
-    const docs = h('section', { class: 'sec' });
-    docs.appendChild(h('div', { class: 'sec-head' }, '<h3>Literature and plan</h3><p>The 26 papers behind the models, the six new directions, and all references.</p>'));
-    const dc = h('div', { class: 'chips' });
-    [['papers', 'Paper library'], ['ideas', 'Six new directions'], ['refs', 'References']].forEach(p => dc.appendChild(h('a', { class: 'chip doc', href: '#' + p[0] }, p[1])));
-    docs.appendChild(dc); root.appendChild(docs);
+    const lit = h('article', { class: 'topic lit' });
+    lit.innerHTML = '<p class="range">Library</p><h3><a href="#papers">Papers and plan</a></h3><p class="blurb">The 26 papers behind the models with their physics, six new research directions, and all references.</p><ul><li><a href="#papers">Paper library</a></li><li><a href="#ideas">Six new directions</a></li><li><a href="#refs">References</a></li></ul>';
+    grid.appendChild(lit); root.appendChild(grid);
+    root.appendChild(h('p', { class: 'how' }, 'In every model: drag the sliders on the left, read the live values, hover a curve for numbers. Theory, equations and what it means for our samples sit under the plots. Each plot has a PNG button; Export CSV saves its data.'));
+    /* hero animation: Preisach loop traced live */
+    const pre = new MX.Preisach({ n: 300, ec: 1, sig: 0.25, seed: 5 }); pre.set(-1);
+    const trail = []; let on = true, t0 = null, id = 0;
+    const draw = ts => {
+      if (!on) return; if (t0 === null) t0 = ts; const t = (ts - t0) / 1000;
+      const r = cv.getBoundingClientRect(); const dpr = window.devicePixelRatio || 1; const W = Math.max(260, r.width), H = Math.max(200, r.height);
+      if (cv.width !== Math.round(W * dpr)) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
+      const g = cv.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); const th = MX.theme();
+      g.fillStyle = th.bg; g.fillRect(0, 0, W, H);
+      const E = 2.2 * Math.sin(t * 0.9); const P = pre.apply(E); trail.push([E, P]); if (trail.length > 420) trail.shift();
+      const X = e => W / 2 + e / 2.5 * (W / 2 - 24), Y = p => H / 2 - p * (H / 2 - 30);
+      g.strokeStyle = th.line; g.lineWidth = 1; g.beginPath(); g.moveTo(16, Y(0)); g.lineTo(W - 16, Y(0)); g.moveTo(X(0), 16); g.lineTo(X(0), H - 16); g.stroke();
+      g.fillStyle = th.muted; g.font = '600 12px IBM Plex Sans, system-ui, sans-serif'; g.textAlign = 'right'; g.fillText('E', W - 18, Y(0) - 8); g.textAlign = 'left'; g.fillText('P', X(0) + 8, 26);
+      for (let i = 1; i < trail.length; i++) { g.strokeStyle = th.c[0]; g.globalAlpha = i / trail.length; g.lineWidth = 3; g.beginPath(); g.moveTo(X(trail[i - 1][0]), Y(trail[i - 1][1])); g.lineTo(X(trail[i][0]), Y(trail[i][1])); g.stroke(); }
+      g.globalAlpha = 1; g.fillStyle = th.hf; g.beginPath(); g.arc(X(E), Y(P), 7, 0, 6.2832); g.fill();
+      const cols = 30, rows = 10, bw = (W - 32) / cols; for (let i = 0; i < cols * rows && i < pre.n; i++) { g.fillStyle = pre.s[i] > 0 ? th.hf : th.c[0]; g.globalAlpha = 0.18; g.fillRect(16 + (i % cols) * bw, H - 14 - (rows - Math.floor(i / cols)) * 5, bw - 1, 4); } g.globalAlpha = 1;
+      id = requestAnimationFrame(draw);
+    };
+    const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce) { for (let k = 0; k < 400; k++) { const E = 2.2 * Math.sin(k * 0.02); trail.push([E, pre.apply(E)]); } }
+    id = requestAnimationFrame(draw); stopAnim = () => { on = false; cancelAnimationFrame(id); };
+    if (reduce) setTimeout(() => { if (stopAnim) stopAnim(); }, 50);
   }
 
   function moduleView(m) {
